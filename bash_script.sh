@@ -1,6 +1,4 @@
 file=$1
-i=1
-a=0
 lineno=0
 
 declare -A events
@@ -24,12 +22,17 @@ if [[ "$file" == *.log ]]; then
     while read -r line; do
         if [[ "$line" =~ \[[A-Za-z]{3}\ [A-Za-z]{3}\ [0-9]{2}\ [0-9]{2}:[0-9]{2}:[0-9]{2}\ [0-9]{4}\]\ \[(notice|error)\]\ .* ]]; then
             (( lineno++ )) 
+            #echo "yes"
+            #echo $lineno
             time=$(echo $line | cut -d ']' -f 1 | cut -d '[' -f 2)
             level=$(echo $line | cut -d ']' -f 2 | cut -d '[' -f 2)
-            content=$(echo $line | cut -d ']' -f 3- | cut -d ' ' -f 1 --complement )
+            #content=$(echo $line | cut -d ']' -f 3- | cut -d ' ' -f 1 --complement )
+            content=$(echo "$line" | cut -d ']' -f3- | sed 's/^ //')
+            cleanContent=$(echo "$content" | sed 's/[\r\n]//g')
+
             for eventno in "${!events[@]}"; do
-                if [[ "$content" =~ ${regexOfEvents[$eventno]} ]]; then
-                    echo "\"$lineno\",\"$time\",\"$level\",\"$content\",\"$eventno\",\"${events[$eventno]}\"" >> log.csv
+                if [[ "$cleanContent" =~ ${regexOfEvents[$eventno]} ]]; then
+                    echo "$lineno,\"$time\",\"$level\",\"$cleanContent\",\"$eventno\",\"${events[$eventno]}\"" >>log.csv    
                 fi
             done 
         else
