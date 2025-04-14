@@ -19,7 +19,7 @@ regexOfEvents["E6"]="mod_jk child init.*"
 echo '"LineId","Time","Level","Content","EventId","EventTemplate"' > log.csv
 
 if [[ "$file" == *.log ]]; then
-    while read -r line; do
+    while read -r line || [[ -n "$line" ]]; do
         if [[ "$line" =~ \[[A-Za-z]{3}\ [A-Za-z]{3}\ [0-9]{2}\ [0-9]{2}:[0-9]{2}:[0-9]{2}\ [0-9]{4}\]\ \[(notice|error)\]\ .* ]]; then
             (( lineno++ )) 
             #echo "yes"
