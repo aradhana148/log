@@ -22,23 +22,27 @@ if [[ "$file" == *.log ]]; then
     while read -r line || [[ -n "$line" ]]; do
         if [[ "$line" =~ \[[A-Za-z]{3}\ [A-Za-z]{3}\ [0-9]{2}\ [0-9]{2}:[0-9]{2}:[0-9]{2}\ [0-9]{4}\]\ \[(notice|error)\]\ .* ]]; then
             (( lineno++ )) 
-            #echo "yes"
-            #echo $lineno
             time=$(echo $line | cut -d ']' -f 1 | cut -d '[' -f 2)
             level=$(echo $line | cut -d ']' -f 2 | cut -d '[' -f 2)
-            #content=$(echo $line | cut -d ']' -f 3- | cut -d ' ' -f 1 --complement )
             content=$(echo "$line" | cut -d ']' -f3- | sed 's/^ //')
             cleanContent=$(echo "$content" | sed 's/[\r\n]//g')
-
+            echo -n "$lineno,\"$time\",\"$level\",\"$cleanContent\"" >>log.csv
+            a=0
             for eventno in "${!events[@]}"; do
                 if [[ "$cleanContent" =~ ${regexOfEvents[$eventno]} ]]; then
-                    echo "$lineno,\"$time\",\"$level\",\"$cleanContent\",\"$eventno\",\"${events[$eventno]}\"" >>log.csv    
+                    echo ",\"$eventno\",\"${events[$eventno]}\"" >>log.csv
+                    ((a++))   
                 fi
-            done 
+            done
+            if [[ $a -eq 0 ]]; then
+                echo ",," >> log.csv
+            fi
         else
-            echo "Not a Apache log file"
-            break
+            #echo "Not a Apache log file"
+            continue
         fi
     done < $file
+else
+    echo "Not a valid file"
 fi
 
