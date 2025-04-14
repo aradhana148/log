@@ -23,28 +23,34 @@ if [[ "$file" == *.log ]]; then
         regexOfEvents["E6"]="mod_jk child init.*";
     }
     {
-        lineno++
-        time="\"" substr($1,2) "\""
-        level="\"" substr($2,2) "\""
-        content=""
-        for(i=3;i<=NF;i++){
-            content=content $i
-            if(i<NF){
-                content=content "] "
+        if ($0 ~ /^\[[A-Z][a-z][a-z] [A-Z][a-z][a-z] [0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] [0-9][0-9][0-9][0-9]\] \[(notice|error)\]/){
+            lineno++
+            time="\"" substr($1,2) "\""
+            level="\"" substr($2,2) "\""
+            content=""
+            for(i=3;i<=NF;i++){
+                content=content $i
+                if(i<NF){
+                    content=content "] "
+                }
+                unclean=substr(content,length(content))
+                if (unclean == "\n" || unclean == "\r" || unclean =="\r\n"){
+                    content=substr(content,1,length(content)-1) 
+                }
             }
-            unclean=substr(content,length(content))
-            if (unclean == "\n" || unclean == "\r"){
-                content=substr(content,1,length(content)-1) 
+            eventid=""
+            eventtemplate=""
+            for (event in regexOfEvents) {
+                if (content ~ regexOfEvents[event]){
+                    eventid ="\"" event "\""
+                    eventtemplate="\"" events[event] "\""
+                    break
+                }
             }
+            content="\"" content "\""
+            print lineno,time,level,content,eventid,eventtemplate >> "log.csv"
         }
-        for (event in regexOfEvents) {
-            if (content ~ regexOfEvents[event]){
-                eventid ="\"" event "\""
-                eventtemplate="\"" events[event] "\""
-                break
-            }
-        }
-        content="\"" content "\""
-        print lineno,time,level,content,event,eventtemplate >> "log.csv"
     }' $file
+else
+    echo "Not a valid file"
 fi
