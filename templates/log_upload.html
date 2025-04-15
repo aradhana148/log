@@ -10,5 +10,9 @@
 {% block body %}
 
 <h2>Upload log file for analysis</h2>
+<form method="POST" enctype="multipart/form-data">
+    <input type="file" name="logfile">
+    <button type="submit">Upload</button>
+</form>
 
 {% endblock %}
