@@ -1,3 +1,31 @@
 body{
     align-content: center;
 }
+#csv {
+    border: 4px solid black
+}
+#csv tr:nth-child(even){
+        background-color: rgba(141, 199, 250, 0.4);
+}
+#csv th:nth-child(even),
+#csv td:nth-child(even){
+        background-color: rgba(141, 199, 250, 0.4);
+}
+
+.button{
+    display: inline;
+    background-color: rgb(254, 168, 75);
+    border: 2px solid saddlebrown;
+    border-radius: 5px;
+    padding-inline: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-decoration: none;
+    color:rgb(82, 5, 5)
+}
+
+.button:hover{
+    background-color: rgb(108, 190, 66);
+    border: 2px solid green;
+    color:rgb(15, 42, 1)
+}

@@ -1,7 +1,40 @@
 {% block head %}
 <title>Display Structured Logs</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 {% endblock %}
 
 {% block body %}
-
+<h2>{{ tableName }}</h2>
+<a href="/download" class="button">Download csv</a>
+<br><br>
+<a href="/graphs" class="button">View Graphs & Plots</a>
+<br><br>
+<form method="POST" enctype="multipart/form-data">
+    <label for="start_time">Start Time:</label>
+    <select class="start_time" id="year">
+        {% for year in yearlist %}
+            <option value="{{ year }}">{{year}}</option>
+        {% endfor %}
+    </select>
+    <select class="start_time" id="month">
+        {% for month in monthlist %}
+            <option value="{{ month }}">{{month}}</option>
+        {% endfor %}
+          
+    </select>
+</form>
+<table id="csv">
+    <tr>
+        {% for head in headList %}
+            <th>{{ head }}</th>
+        {% endfor %}
+    </tr>
+    {% for rowdataList in dataList %}
+        <tr>
+            {% for rowdata in rowdataList %}
+                <td>{{ rowdata }}</td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+</table>
 {% endblock %}
