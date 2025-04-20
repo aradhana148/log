@@ -4,11 +4,46 @@
 
 {% block body %}
 <h3>Line Plot</h3>
+<form method="POST" enctype="multipart/form-data">
+    <label for="start_time">Start Time :</label>
+    <select class="start_time" id="syear" name="syear">
+        <option value="{{firstYear}}">{{firstYear}}</option>
+        {% for year in yearlist %}
+            <option value="{{ year }}">{{year}}</option>
+        {% endfor %}
+    </select>
+    <select class="start_time" id="smonth" name="smonth">
+        <option value="{{firstMonth}}">{{firstMonth}}</option>
+        {% for month in monthlist %}
+            <option value="{{ month }}">{{month}}</option>
+        {% endfor %}
+    </select>
+    <input type="text" class="start_time" id="sdate" name="sdate" value={{firstDate}}></input>
+    <input type="text" class="start_time" id="stime" name="stime" value={{firstTime}}></input>
+    <br><br>
+    <label for="end_time">End Time :</label>
+    <select class="end_time" id="eyear" name="eyear">
+        <option value="{{lastYear}}">{{lastYear}}</option>
+        {% for year in yearlist %}
+            <option value="{{ year }}">{{year}}</option>
+        {% endfor %}
+    </select>
+    <select class="end_time" id="emonth" name="emonth">
+        <option value="{{lastMonth}}">{{lastMonth}}</option>
+        {% for month in monthlist %}
+            <option value="{{ month }}">{{month}}</option>
+        {% endfor %}
+    </select>
+    <input type="text" class="end_time" id="edate" name="edate" value={{lastDate}}></input>
+    <input type="text" class="end_time" id="etime" name="etime" value={{lastTime}}></input>
+    <input type="submit">
+</form>
 <img src="{{ url_for('static', filename='line_plot.png') }}" alt="Line Plot">
 
 <h3>Pie Chart</h3>
-<img src="{{ url_for('static', filename='level_pie_chart.png') }}" alt="Pie Chart">
+<img src="{{ url_for('static', filename='level_pie.png') }}" alt="Pie Chart">
 
 <h3>Bar Chart</h3>
 <img src="{{ url_for('static', filename='bar.png') }}" alt="Bar Chart">
+
 {% endblock %}

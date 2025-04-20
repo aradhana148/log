@@ -7,7 +7,12 @@ body{
 #csv tr:nth-child(even){
         background-color: rgba(141, 199, 250, 0.4);
 }
-#csv th:nth-child(even),
+#csv th:nth-child(even){
+    background-color: rgba(31, 136, 228, 0.4);
+}
+#csv th:nth-child(odd){
+    background-color: rgba(31, 136, 228, 0.4);
+}
 #csv td:nth-child(even){
         background-color: rgba(141, 199, 250, 0.4);
 }

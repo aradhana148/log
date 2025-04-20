@@ -9,20 +9,7 @@
 <br><br>
 <a href="/graphs" class="button">View Graphs & Plots</a>
 <br><br>
-<form method="POST" enctype="multipart/form-data">
-    <label for="start_time">Start Time:</label>
-    <select class="start_time" id="year">
-        {% for year in yearlist %}
-            <option value="{{ year }}">{{year}}</option>
-        {% endfor %}
-    </select>
-    <select class="start_time" id="month">
-        {% for month in monthlist %}
-            <option value="{{ month }}">{{month}}</option>
-        {% endfor %}
-          
-    </select>
-</form>
+
 <table id="csv">
     <tr>
         {% for head in headList %}
