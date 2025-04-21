@@ -1,7 +1,8 @@
-from flask import Flask, render_template,request,send_file,session,redirect
+from flask import Flask, render_template,request,send_file,session
 import os
 import subprocess
 import matplotlib.pyplot as plt
+import numpy as np
 
 def csv_parser(line):
     linelist=[]
@@ -63,7 +64,6 @@ def upload():
 
         monthno={}
         monthno={"Jan":1,"Feb":2,"Mar":3,"Apr":4,"May":5,"Jun":6,"Jul":7,"Aug":8,"Sep":9,"Oct":10,"Nov":11,"Dec":12}
-        session["monthlist"]=list(monthno.keys())
 
         stime=""
         etime=""
@@ -95,6 +95,14 @@ def upload():
         session["lastDate"]=edate
         session["lastMonth"]=emon
         yearlist.pop(0)
+        session['yearlist1']=yearlist[1:]
+        session['yearlist2']=yearlist[:len(yearlist)-1]
+        a=list(monthno.keys())
+        b=list(monthno.keys())
+        a.pop(monthno[smon]-1)
+        b.pop(monthno[emon]-1)
+        session['monthlist1']=a
+        session['monthlist2']=b
         print(yearlist)
         session["firstYear"]=yearlist[0]
         session["lastYear"]=yearlist[len(yearlist)-1]
@@ -128,8 +136,9 @@ def download():
 @app.route('/graphs',methods=['GET','POST'])
 def graphs():
     if request.method =='GET':
-        return render_template('graphs_plots.html',yearlist=session.get('yearlist'),monthlist=session.get('monthlist'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'))
+        return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'))
     if request.method == 'POST':
+        displayyes=True
         monthno={"Jan":1,"Feb":2,"Mar":3,"Apr":4,"May":5,"Jun":6,"Jul":7,"Aug":8,"Sep":9,"Oct":10,"Nov":11,"Dec":12}
         syear = int(request.form.get("syear"))
         smonth = int(monthno[request.form.get("smonth")])
@@ -147,6 +156,11 @@ def graphs():
         etime=etime[0]+etime[1]*0.01+etime[2]*0.0001
     sDateTime=syear*10000+smonth*100+sdate+stime*0.01
     eDateTime=eyear*10000+emonth*100+edate+etime*0.01
+    displyFrom=request.form.get("smonth")+" "+str(sdate)+" "+request.form.get("stime")+" "+str(syear)
+    displayTo=request.form.get("emonth")+" "+str(edate)+" "+request.form.get("etime")+" "+str(eyear)
+    
+    session['displayFrom']=displyFrom
+    session['displayTo']=displayTo
     error=0
     notice=0
     time={}
@@ -158,8 +172,7 @@ def graphs():
         for line in f:
             line=csv_parser(line)
             if a==1:
- 
-                if DateTime(line)>=eDateTime:
+                if DateTime(line)>eDateTime:
                     break
                 if sDateTime<=DateTime(line)<=eDateTime:
                     print("ooo")
@@ -174,25 +187,43 @@ def graphs():
                     else:
                         notice+=1
             a=1
-    #print(error,notice)
-    y=[error,notice]
-    plt.figure()
-    plt.pie(y,labels=["error","notice"])
-    plt.savefig('static/level_pie.png')
-    plt.clf()
-    plt.figure()
+
+    plt.figure(figsize=(19,12))
     times=time.keys()
+    times=list(times)
+    print(times)
     noof=time.values()
     plt.plot(times,noof)
+    if len(times)>20:
+        arr=np.linspace(0,len(times)-1,20)
+        arr=list(arr)
+        arr=[int(i) for i in arr]
+        print(arr)
+        xticks=[times[i][4:] for i in arr]
+        print(xticks)
+        plt.xticks(arr,xticks,rotation=45,ha='right')
+    if 6<=len(times)<=20:
+        xticks=[times[i][4:] for i in range(0,len(times))]
+        arr=[i for i in range(0,len(times))]
+        plt.xticks(arr,xticks,rotation=45,ha='right')
     plt.savefig('static/line_plot.png')
     plt.clf()
+
+    y=[error,notice]
+    labels=["error","notice"]
+    plt.figure()
+    plt.pie(y,labels=labels)
+    plt.title("Log level")
+    plt.legend(labels,loc="upper right")
+    plt.savefig('static/level_pie.png')
+    plt.clf()
+    
     plt.figure()
     events=[f"E{i}" for i in range(1,7)]
     plt.bar(events,eventCount,width=0.5)
     plt.savefig('static/bar.png')
-   
     plt.clf()
-    return render_template('graphs_plots.html',yearlist=session.get('yearlist'),monthlist=session.get('monthlist'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'))
+    return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),displayFrom=session.get('displayFrom'),displayTo=session.get('displayTo'),displayyes=displayyes)
 
 
     
