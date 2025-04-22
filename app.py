@@ -103,7 +103,7 @@ def upload():
         b.pop(monthno[emon]-1)
         session['monthlist1']=a
         session['monthlist2']=b
-        print(yearlist)
+        #print(yearlist)
         session["firstYear"]=yearlist[0]
         session["lastYear"]=yearlist[len(yearlist)-1]
     
@@ -172,10 +172,12 @@ def graphs():
         for line in f:
             line=csv_parser(line)
             if a==1:
+                if sDateTime>eDateTime:
+                    return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),msg=True)
                 if DateTime(line)>eDateTime:
                     break
                 if sDateTime<=DateTime(line)<=eDateTime:
-                    print("ooo")
+                    #print("ooo")
                     try:
                         time[line[1]]+=1
                     except KeyError:
@@ -187,26 +189,29 @@ def graphs():
                     else:
                         notice+=1
             a=1
-
+    downasList=[".png",".jpeg",".pdf"]
     plt.figure(figsize=(19,12))
     times=time.keys()
     times=list(times)
-    print(times)
+    #print(times)
     noof=time.values()
     plt.plot(times,noof)
     if len(times)>20:
         arr=np.linspace(0,len(times)-1,20)
         arr=list(arr)
         arr=[int(i) for i in arr]
-        print(arr)
+        #print(arr)
         xticks=[times[i][4:] for i in arr]
-        print(xticks)
+        #print(xticks)
         plt.xticks(arr,xticks,rotation=45,ha='right')
     if 6<=len(times)<=20:
         xticks=[times[i][4:] for i in range(0,len(times))]
         arr=[i for i in range(0,len(times))]
         plt.xticks(arr,xticks,rotation=45,ha='right')
-    plt.savefig('static/line_plot.png')
+    for i in range(3):
+        plotname="events_vs_time"+downasList[i]
+        plotPath=os.path.join("static",plotname)
+        plt.savefig(plotPath)
     plt.clf()
 
     y=[error,notice]
@@ -215,16 +220,35 @@ def graphs():
     plt.pie(y,labels=labels)
     plt.title("Log level")
     plt.legend(labels,loc="upper right")
-    plt.savefig('static/level_pie.png')
+    for i in range(3):
+        plotname="level_state_distribution"+downasList[i]
+        plotPath=os.path.join("static",plotname)
+        plt.savefig(plotPath)
     plt.clf()
     
     plt.figure()
     events=[f"E{i}" for i in range(1,7)]
     plt.bar(events,eventCount,width=0.5)
-    plt.savefig('static/bar.png')
+    for i in range(3):
+        plotname="event_code_distribution"+downasList[i]
+        plotPath=os.path.join("static",plotname)
+        plt.savefig(plotPath)
     plt.clf()
     return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),displayFrom=session.get('displayFrom'),displayTo=session.get('displayTo'),displayyes=displayyes)
 
+@app.route('/download_graph',methods=['GET','POST'])
+def downloadGraph():
+    #return send_file('log.csv',as_attachment=True,download_name=session.get('uploadedFileName')+".csv")
+    downas=request.form.get('download_as')
+    print(downas)
+    plotType=request.form.get('plotType')
+    downasDict={"PNG":".png","JPEG":".jpeg","PDF":".pdf"}
+    plotTypeDict={"Events logged with time (Line Plot)":"events_vs_time","Level State Distribution (Pie Chart)":"level_state_distribution","Event Code Distribution (Bar Plot)":"event_code_distribution"}
+    plotname=plotTypeDict[plotType]+downasDict[downas]
+    print(plotname)
+    plotPath=os.path.join("static",plotname)
+    return send_file(plotPath,as_attachment=True,download_name=plotname)
+    
 
     
 if __name__ == "__main__":

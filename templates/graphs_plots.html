@@ -1,5 +1,6 @@
 {% block head %}
 <title>Graphs</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 {% endblock %}
 
 {% block body %}
@@ -38,16 +39,34 @@
     <input type="text" class="end_time" id="etime" name="etime" value={{lastTime}}></input>
     <input type="submit">
 </form>
+{% if msg %}
+    <p>Please enter valid Start and End times</p>
+{% endif %}
 {% if displayyes %}
     <h4>From {{displayFrom}} To {{displayTo}}</h4>
+
+    <form method="POST" enctype="multipart/form-data" action="/download_graph">
+        <label for="plotType">Download</label>
+        <select class="plotType" name="plotType">
+            <option>Events logged with time (Line Plot)</option>
+            <option>Level State Distribution (Pie Chart)</option>
+            <option>Event Code Distribution (Bar Plot)</option>
+        </select>
+        <label for="downgra">as</label>
+        <select class="downgra" name="download_as">
+            <option>PNG</option>
+            <option>JPEG</option>
+            <option>PDF</option>
+        </select>
+        <button type="submit" class="button">Download</button>
+    </form>
+    <h3>Events logged with Time</h3>
+    <img src="{{ url_for('static', filename='events_vs_time.png') }}" alt="Line Plot">
+
+    <h3>Level State Distribution</h3>
+    <img src="{{ url_for('static', filename='level_state_distribution.png') }}" alt="Pie Chart">
+
+    <h3>Event Code Distribution</h3>
+    <img src="{{ url_for('static', filename='event_code_distribution.png') }}" alt="Bar Chart">
 {% endif %}
-<h3>Line Plot</h3>
-<img src="{{ url_for('static', filename='line_plot.png') }}" alt="Line Plot">
-
-<h3>Pie Chart</h3>
-<img src="{{ url_for('static', filename='level_pie.png') }}" alt="Pie Chart">
-
-<h3>Bar Chart</h3>
-<img src="{{ url_for('static', filename='bar.png') }}" alt="Bar Chart">
-
 {% endblock %}
