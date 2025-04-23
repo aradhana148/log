@@ -1,0 +1,21 @@
+{% block head %}
+<title>Custom</title>
+{% endblock %}
+
+{% block body %}
+<form method="POST" enctype="multipart/form-data" action="/custom">
+    <textarea name="code" rows="20" cols="100">
+#write code 
+#hfkjrehgk
+print("hi")
+# write code below
+
+
+#writing done
+plt.savefig("static/custom.png")
+    </textarea>
+    <button type="submit" class="button">Submit</button>
+</form>
+<img src="{{ url_for('static', filename='custom.png') }}">
+
+{% endblock %}

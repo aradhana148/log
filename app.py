@@ -3,6 +3,7 @@ import os
 import subprocess
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 def csv_parser(line):
     linelist=[]
@@ -271,7 +272,6 @@ def graphs():
 
 @app.route('/download_graph',methods=['GET','POST'])
 def downloadGraph():
-    #return send_file('log.csv',as_attachment=True,download_name=session.get('uploadedFileName')+".csv")
     downas=request.form.get('download_as')
     print(downas)
     plotType=request.form.get('plotType')
@@ -281,7 +281,16 @@ def downloadGraph():
     print(plotname)
     plotPath=os.path.join("static",plotname)
     return send_file(plotPath,as_attachment=True,download_name=plotname)
-    
+
+@app.route('/custom',methods=['GET','POST'])
+def customGraph():
+    if request.method == 'POST':
+        code=request.form.get('code')
+        df=pd.read_csv('log.csv')
+        plt.figure()  
+        exec(code)
+    return render_template('custom.html')
+
 
 if __name__ == "__main__":
     app.run(debug=True)
