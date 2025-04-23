@@ -289,6 +289,7 @@ def customGraph():
         df=pd.read_csv('log.csv')
         plt.figure()  
         exec(code)
+        plt.clf()
     return render_template('custom.html')
 
 
