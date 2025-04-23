@@ -29,6 +29,20 @@ def DateTime(line):
     monthno={"Jan":1,"Feb":2,"Mar":3,"Apr":4,"May":5,"Jun":6,"Jul":7,"Aug":8,"Sep":9,"Oct":10,"Nov":11,"Dec":12}
     return (int(line[1][-4:])*10000+int(monthno[line[1][4:7]])*100+int(line[1][8:10]) + 0.01*(int(line[1][-13:-11])+int(line[1][-10:-8])*0.01+int(line[1][-7:-5])*0.0001))
 
+def ConvertInputEventId(event):
+    if event==None:
+        return None
+    comma=event.split(',')
+    eventlist=[]
+    for i in comma:
+        if '-' not in i:
+            eventlist.append(i)
+        if '-' in i:
+            toexpand=i.split('-')
+            for j in range(int(toexpand[0][1]),int(toexpand[1][1])+1):
+                eventlist.append("E"+str(j))
+    return eventlist
+
 app=Flask(__name__)
 app.secret_key="oompa loompa"
 
@@ -110,28 +124,47 @@ def upload():
     return render_template('log_upload.html',message=msg,yes=yes)
 
             
-@app.route('/display')
+@app.route('/display',methods=['GET','POST'])
 def display():
     i=0
     headList=None
     dataList=[]
-    
-    with open("log.csv","r") as f:    
-        for line in f:
-            if i==0:
-                headList=line.split(',')
-                i=1
-            else:
-                line=csv_parser(line)
-                dataList.append(line)
+    LevelsList=["all","notice","error"]
+    EventIdsList=[("E"+str(i)) for i in range(1,7)]
+    EventIdsList=["all"]+EventIdsList
+    session["levelsList"]=LevelsList
+    session["eventIdsList"]=EventIdsList
+    level=request.form.get("level")
+    if level=="all":
+        session["selectedLevel"]="notice,error"
+    else:
+        session["selectedLevel"]=level
+    eventId=request.form.get("eventid")
+    session["selectedEventId"]=eventId
+    eventId=ConvertInputEventId(eventId)
+    with open("filtered_log.csv","w") as ff:
+        with open("log.csv","r") as f:  
+            for line in f:
+                if i==0:
+                    ff.write(line)
+                    headList=line.split(',')
+                    i=1
+                else:
+                    linep=csv_parser(line)
+                    if (level=="all" or level==linep[2]) and (linep[4] in eventId):
+                        dataList.append(linep)
+                        ff.write(line)
 
-    return render_template('log_display.html',headList=headList,dataList=dataList,tableName=session.get('uploadedFileName'))
+    return render_template('log_display.html',headList=headList,dataList=dataList,tableName=session.get('uploadedFileName'),levelsList=session.get('levelsList'),eventIdsList=session.get('eventIdsList'),selectedLevel=session.get('selectedLevel'),selectedEventId=session.get('selectedEventId'))
 
 
 @app.route('/download')
 def download():
     return send_file('log.csv',as_attachment=True,download_name=session.get('uploadedFileName')+".csv")
 
+@app.route('/downloadFilter')
+def downloadFilter():
+    return send_file('filtered_log.csv',as_attachment=True)
 
 @app.route('/graphs',methods=['GET','POST'])
 def graphs():
@@ -250,6 +283,5 @@ def downloadGraph():
     return send_file(plotPath,as_attachment=True,download_name=plotname)
     
 
-    
 if __name__ == "__main__":
     app.run(debug=True)

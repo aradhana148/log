@@ -4,24 +4,51 @@
 {% endblock %}
 
 {% block body %}
-<h2>{{ tableName }}</h2>
-<a href="/download" class="button">Download csv</a>
-<br><br>
-<a href="/graphs" class="button">View Graphs & Plots</a>
-<br><br>
+<a href="/" class="button" style="float: right;">Back to Upload page</a>
 
-<table id="csv">
-    <tr>
-        {% for head in headList %}
-            <th>{{ head }}</th>
+<a href="/graphs" class="button" style="float: right;">View Graphs & Plots</a>
+<h2>{{ tableName }}</h2>
+
+<a href="/download" class="button" >Download csv</a>
+
+<br><br>
+<p>To filter by EventId, give EventId seperated by commas and/or hyphen</p>
+<p>Example : E2,E4-E6</p>
+<form method="POST" enctype="multipart/form-data" action="/display">
+    <label for="levels">Filter by Level/s:</label>
+    <select class="levels" name="level">
+        {% for i in levelsList %}
+            <option>{{i}}</option>
         {% endfor %}
-    </tr>
-    {% for rowdataList in dataList %}
+    </select>
+    <label for="eventid">Filter by EventId/s:</label>
+    <input type="text" class="eventid" name="eventid" value="E1-E6">
+    <!-- <label for="eventIds">Event ID:</label>
+    <select class="eventIds" name="eventid">
+        {% for i in eventIdsList %}
+            <option>{{i}}</option>
+        {% endfor %}
+    </select> -->
+    <button type="submit" class="button">Submit</button>
+</form>
+<p>Level/s   : {{ selectedLevel }}</p>
+<p>EventId/s : {{selectedEventId}}</p>
+{% if dataList %}
+    <a href="/downloadFilter" class="button">Download Filtered csv</a>
+    <br><br>
+    <table id="csv">
         <tr>
-            {% for rowdata in rowdataList %}
-                <td>{{ rowdata }}</td>
+            {% for head in headList %}
+                <th>{{ head }}</th>
             {% endfor %}
         </tr>
-    {% endfor %}
-</table>
+        {% for rowdataList in dataList %}
+            <tr>
+                {% for rowdata in rowdataList %}
+                    <td>{{ rowdata }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
 {% endblock %}
