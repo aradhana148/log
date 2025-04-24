@@ -177,16 +177,24 @@ def graphs():
         syear = int(request.form.get("syear"))
         smonth = int(monthno[request.form.get("smonth")])
         sdate=int(request.form.get("sdate"))
+        if sdate>31:
+            return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid Start Time")
         stime = request.form.get("stime")
         stime=stime.split(":")
         stime=[int(i) for i in stime]
+        if len(stime)!=3 or stime[0]>24 or stime[1]>60 or stime[2]>60:
+            return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid Start Time")
         stime=stime[0]+stime[1]*0.01+stime[2]*0.0001
         eyear = int(request.form.get("eyear"))
         emonth = int(monthno[request.form.get("emonth")])
         edate=int(request.form.get("edate"))
+        if edate>31:
+            return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid End Time")
         etime = request.form.get("etime")
         etime=etime.split(":")
         etime=[int(i) for i in etime]
+        if len(etime)!=3 or etime[0]>24 or etime[1]>60 or etime[2]>60:
+            return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid End Time")
         etime=etime[0]+etime[1]*0.01+etime[2]*0.0001
     sDateTime=syear*10000+smonth*100+sdate+stime*0.01
     eDateTime=eyear*10000+emonth*100+edate+etime*0.01
@@ -273,25 +281,28 @@ def graphs():
 @app.route('/download_graph',methods=['GET','POST'])
 def downloadGraph():
     downas=request.form.get('download_as')
-    print(downas)
     plotType=request.form.get('plotType')
     downasDict={"PNG":".png","JPEG":".jpeg","PDF":".pdf"}
     plotTypeDict={"Events logged with time (Line Plot)":"events_vs_time","Level State Distribution (Pie Chart)":"level_state_distribution","Event Code Distribution (Bar Plot)":"event_code_distribution"}
     plotname=plotTypeDict[plotType]+downasDict[downas]
-    print(plotname)
     plotPath=os.path.join("static",plotname)
     return send_file(plotPath,as_attachment=True,download_name=plotname)
 
 @app.route('/custom',methods=['GET','POST'])
 def customGraph():
+    emsg=""
     if request.method == 'POST':
         code=request.form.get('code')
-        df=pd.read_csv('log.csv')
-        plt.figure()  
-        exec(code)
-        plt.clf()
-    return render_template('custom.html')
+        try:
+            df=pd.read_csv('log.csv')
+            plt.figure()  
+            exec(code)
+            plt.clf()
+        except Exception as err:
+            emsg = str(emsg)
+    return render_template('custom.html',emsg=emsg)
 
 
 if __name__ == "__main__":
     app.run(debug=True)
+# app.run(debug=True) also works idk yyyyy oo lalala

@@ -43,6 +43,9 @@
 {% if msg %}
     <p>Please enter valid Start and End times</p>
 {% endif %}
+{% if timeerror %}
+    <p>{{timeerror}}</p>
+{% endif %}
 {% if displayyes %}
     <h4>From {{displayFrom}} To {{displayTo}}</h4>
 

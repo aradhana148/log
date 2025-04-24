@@ -15,6 +15,10 @@ plt.savefig("static/custom.png")
     </textarea>
     <button type="submit" class="button">Submit</button>
 </form>
-<img src="{{ url_for('static', filename='custom.png') }}">
+{% if emsg %}
+    <p>{{emsg}}</p>
+{% else %}
+    <img src="{{ url_for('static', filename='custom.png') }}" alt="">
+{% endif %}
 
 {% endblock %}
