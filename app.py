@@ -135,26 +135,39 @@ def display():
     EventIdsList=["all"]+EventIdsList
     session["levelsList"]=LevelsList
     session["eventIdsList"]=EventIdsList
-    level=request.form.get("level")
-    if level=="all":
-        session["selectedLevel"]="notice,error"
-    else:
-        session["selectedLevel"]=level
-    eventId=request.form.get("eventid")
-    session["selectedEventId"]=eventId
-    eventId=ConvertInputEventId(eventId)
-    with open("filtered_log.csv","w") as ff:
-        with open("log.csv","r") as f:  
-            for line in f:
-                if i==0:
-                    ff.write(line)
-                    headList=line.split(',')
-                    i=1
-                else:
-                    linep=csv_parser(line)
-                    if (level=="all" or level==linep[2]) and (linep[4] in eventId):
-                        dataList.append(linep)
+    with open("log.csv","r") as f:
+        for line in f:
+            if i==0:
+                headList=line.split(',')
+                i=1
+            else:
+                line=csv_parser(line)
+                dataList.append(line)
+        session["selectedLevel"]="all"
+        session["selectedEventId"]="all"
+    if request.method=="POST":
+        level=request.form.get("level")
+        if level=="all":
+            session["selectedLevel"]="notice,error"
+        else:
+            session["selectedLevel"]=level
+        eventId=request.form.get("eventid")
+        session["selectedEventId"]=eventId
+        eventId=ConvertInputEventId(eventId)
+        i=0
+        dataList=[]
+        with open("filtered_log.csv","w") as ff:
+            with open("log.csv","r") as f:  
+                for line in f:
+                    if i==0:
                         ff.write(line)
+                        headList=line.split(',')
+                        i=1
+                    else:
+                        linep=csv_parser(line)
+                        if (level=="all" or level==linep[2]) and (linep[4] in eventId):
+                            dataList.append(linep)
+                            ff.write(line)
 
     return render_template('log_display.html',headList=headList,dataList=dataList,tableName=session.get('uploadedFileName'),levelsList=session.get('levelsList'),eventIdsList=session.get('eventIdsList'),selectedLevel=session.get('selectedLevel'),selectedEventId=session.get('selectedEventId'))
 
@@ -254,6 +267,7 @@ def graphs():
         plotname="events_vs_time"+downasList[i]
         plotPath=os.path.join("static",plotname)
         plt.savefig(plotPath)
+    plt.tight_layout()
     plt.clf()
 
     y=[error,notice]
