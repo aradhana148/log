@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block head %}
+
+<title>Upload log file</title>
+<style>
+    #outer_box{
+        border: 2px dashed black;
+        width: 300px;
+        height: 300px;
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block body %}
+<form action="/" method="POST" enctype="multipart/form-data" id="upform">
+    <div id="outer_box">
+        <div id="box">
+            <p id="drag_drop_msg">Drag logfile here to upload or</p>
+            <input type="file" id="file" name="logfile">
+        </div>
+    </div>
+    <button type="submit">Upload</button>
+</form>
+<script>
+    const box=document.getElementById('box');
+    const input_file=document.getElementById('file');
+    const drag_drop_msg=document.getElementById('drag_drop_msg');
+    const form=document.getElementById('upform')
+    box.addEventListener('dragover', (event)=>{
+        event.preventDefault();
+        box.style.border="2px dashed black";
+        drag_drop_msg.textContent="Drop to upload file";
+    });
+    box.addEventListener('dragleave', (event) => {
+        event.preventDefault();
+        box.style.border = "none";
+        drag_drop_msg.textContent = "Drag logfile here to upload or";
+    });
+    box.addEventListener('drop', event => {
+        event.preventDefault();
+        box.style.border = "none";
+        const files = event.dataTransfer.files;
+        if (!files.length) {
+            drag_drop_msg.textContent = 'No file dropped';
+            return;
+        }
+        const file=files[0]
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        input_file.files = dataTransfer.files;
+
+        drag_drop_msg.textContent = file.name + ' ready - click Upload';
+    });
+</script>
+
+
+{% if message %}
+    <p>{{ message }}</p>
+{% endif %}
+
+{% if yes %}
+    <p><a href="/display">View Structured Log</a></p>
+
+    <p><a href="/graphs">View Graphs & Plots</a></p>
+{% endif %}
+
+{% endblock %}
+

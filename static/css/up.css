@@ -1,0 +1,16 @@
+body{
+    font-family: 'Kantumruy Pro', sans-serif;
+    background-color: #a5d1e5;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.upbox {
+    background-color:#8ecae6;
+    text-align: center;
+    border-radius: 15px;
+    padding: 30px;
+}

@@ -30,7 +30,11 @@ body{
 }
 
 .button:hover{
-    background-color: rgb(108, 190, 66);
-    border: 2px solid green;
-    color:rgb(15, 42, 1)
+    background-color: rgb(252, 148, 37);
+    border: 2px solid saddlebrown;
+    color:rgb(82, 5, 5)
+}
+
+.bar{
+    float: right;
 }

@@ -3,27 +3,30 @@
 {% block head %}
 
 <title>Upload log file</title>
-
+<link href="{{ url_for('static', filename='css/up.css') }}" rel="stylesheet">
 {% endblock %}
 
 
 {% block body %}
 
-<h2>Upload log file for analysis</h2>
+<div class="upbox">
+    <h2>Upload log file for analysis</h2>
 
-<form method="POST" enctype="multipart/form-data">
-    <input type="file" name="logfile">
-    <button type="submit">Upload</button>
-</form>
-
-{% if message %}
-    <p>{{ message }}</p>
-{% endif %}
-
+    <form method="POST" enctype="multipart/form-data" class="up_form">
+        <input type="file" name="logfile" class="input_file">
+        <button type="submit" class="up_button">Upload</button>
+    </form>
+</div>
+<div class="out_message">
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+</div>
 {% if yes %}
-    <p><a href="/display">View Structured Log</a></p>
-
-    <p><a href="/graphs">View Graphs & Plots</a></p>
+    <div class="buttons">
+        <a href="/display" class="button">View Structured Log</a>
+        <a href="/graphs" class="button">View Graphs & Plots</a>
+    </div>
 {% endif %}
 
 {% endblock %}

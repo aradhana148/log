@@ -58,18 +58,24 @@ def upload():
     yes = False
     if request.method == 'POST':
         file=request.files['logfile']
+        print(file.filename)
+        print("yes")
         path=os.path.join(UPLOADFOLDER, file.filename)
-        file.save(path)
         
-        if ".log" not in file.filename:
+        if file.filename =="":
+            msg="Please select file"
+            return render_template('log_upload2.html', message=msg)
+        file.save(path)
+        if not file.filename.endswith('.log'):
             msg = "Please upload a log file"
             os.remove(path)
-            return render_template('log_upload.html', message=msg)
+            return render_template('log_upload2.html', message=msg)
         subprocess.run(['awk','-f','awking.awk', path], check=True) 
         if "log.csv" not in os.listdir("."):
             msg= "Please upload Apache log"
             os.remove(path)
-            return render_template('log_upload.html',message=msg)
+            return render_template('log_upload2.html',message=msg)
+        session["upload_yes"]=True
         session["uploadedFileName"]=file.filename[:-4]  
         msg = "Log file uploaded and processed successfully"
         yes = True
@@ -121,8 +127,9 @@ def upload():
         #print(yearlist)
         session["firstYear"]=yearlist[0]
         session["lastYear"]=yearlist[len(yearlist)-1]
+
     
-    return render_template('log_upload.html',message=msg,yes=yes)
+    return render_template('log_upload2.html',message=msg,yes=yes)
 
             
 @app.route('/display',methods=['GET','POST'])

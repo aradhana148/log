@@ -64,13 +64,17 @@
         </select>
         <button type="submit" class="button">Download</button>
     </form>
-    <h3>Events logged with Time</h3>
-    <img src="{{ url_for('static', filename='events_vs_time.png') }}" alt="Line Plot">
-
-    <h3>Level State Distribution</h3>
-    <img src="{{ url_for('static', filename='level_state_distribution.png') }}" alt="Pie Chart">
-
-    <h3>Event Code Distribution</h3>
-    <img src="{{ url_for('static', filename='event_code_distribution.png') }}" alt="Bar Chart">
+    <div class="line">
+        <h3>Events logged with Time</h3>
+        <img src="{{ url_for('static', filename='events_vs_time.png') }}" alt="Line Plot">
+    </div>
+    <div class="pie">
+        <h3>Level State Distribution</h3>
+        <img src="{{ url_for('static', filename='level_state_distribution.png') }}" alt="Pie Chart">
+    </div>
+    <div class="bar">
+        <h3>Event Code Distribution</h3>
+        <img src="{{ url_for('static', filename='event_code_distribution.png') }}" alt="Bar Chart">
+    </div>
 {% endif %}
 {% endblock %}
