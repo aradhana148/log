@@ -23,20 +23,20 @@ def upload():
         path=os.path.join(UPLOADFOLDER, file.filename)
         
         if file.filename =="":
-            msg="Please select file"
+            msg="Please select a file"
             msg_cat="error" # message category
             return render_template('log_upload.html', message=msg,msg_cat=msg_cat)
         file.save(path)
         # Check if file is log file
         if not file.filename.endswith('.log'):
-            msg = "Please upload a log file"
+            msg = "Please upload log file"
             msg_cat="error"  # message category
             os.remove(path)
             return render_template('log_upload.html', message=msg,msg_cat=msg_cat)
         subprocess.run(['awk','-f','awking.awk', path], check=True) 
         # Check if file is Apache log file
         if "log.csv" not in os.listdir("."):
-            msg= "Please upload Apache log"
+            msg= "Please upload Apache log file"
             msg_cat="error" # message category
             os.remove(path)
             return render_template('log_upload.html',message=msg,msg_cat=msg_cat)
