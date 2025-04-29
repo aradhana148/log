@@ -17,37 +17,37 @@
 </nav>
 <div id="content">
 <form method="POST" enctype="multipart/form-data" class="start_end_form" >
-    <label for="start_time">Start Date and Time :</label>
-    <select class="start_time" id="syear" name="syear">
+    <label for="start_date_time">Start Date and Time :</label>
+    <select class="start_date_time" id="start_year" name="start_year">
         <option value="{{firstYear}}">{{firstYear}}</option>
         {% for year in yearlist1 %}
             <option value="{{ year }}">{{year}}</option>
         {% endfor %}
     </select>
-    <select class="start_time" id="smonth" name="smonth">
+    <select class="start_time" id="start_month" name="start_month">
         <option value="{{firstMonth}}">{{firstMonth}}</option>
         {% for month in monthlist1 %}
             <option value="{{ month }}">{{month}}</option>
         {% endfor %}
     </select>
-    <input type="text" class="start_time" id="sdate" name="sdate" value={{firstDate}}></input>
-    <input type="text" class="start_time" id="stime" name="stime" value={{firstTime}}></input>
+    <input type="text" class="start_date_time" id="start_date" name="start_date" value={{firstDate}}></input>
+    <input type="text" class="start_date_time" id="start_time" name="start_time" value={{firstTime}}></input>
     <br><br>
-    <label for="end_time">End Date and Time   :</label>
-    <select class="end_time" id="eyear" name="eyear">
+    <label for="end_date_time">End Date and Time   :</label>
+    <select class="end_date_time" id="end_year" name="end_year">
         <option value="{{lastYear}}">{{lastYear}}</option>
         {% for year in yearlist2 %}
             <option value="{{ year }}">{{year}}</option>
         {% endfor %}
     </select>
-    <select class="end_time" id="emonth" name="emonth">
+    <select class="end_date_time" id="end_month" name="end_month">
         <option value="{{lastMonth}}">{{lastMonth}}</option>
         {% for month in monthlist2 %}
             <option value="{{ month }}">{{month}}</option>
         {% endfor %}
     </select>
-    <input type="text" class="end_time" id="edate" name="edate" value={{lastDate}}></input>
-    <input type="text" class="end_time" id="etime" name="etime" value={{lastTime}}></input>
+    <input type="text" class="end_date_time" id="end_date" name="end_date" value={{lastDate}}></input>
+    <input type="text" class="end_date_time" id="end_time" name="end_time" value={{lastTime}}></input>
     <br>
     <input type="submit" class="button">
 </form>
@@ -67,8 +67,8 @@
             <option>Level State Distribution (Pie Chart)</option>
             <option>Event Code Distribution (Bar Plot)</option>
         </select>
-        <label for="downgra">as</label>
-        <select class="downgra" name="download_as">
+        <label for="down_graph">as</label>
+        <select class="down_graph" name="download_as">
             <option>PNG</option>
             <option>JPEG</option>
             <option>PDF</option>

@@ -7,10 +7,8 @@ import pandas as pd
 from myfunctions import csv_parser,DateTime,ConvertInputEventId
 
 app=Flask(__name__)
-app.secret_key="oompa loompa"
+app.secret_key="chocolate oompa loompa"
 
-UPLOADFOLDER = "uploads"
-os.makedirs(UPLOADFOLDER,mode=0o777, exist_ok=True)
 
 @app.route('/',methods=['GET', 'POST'])
 def upload():
@@ -20,7 +18,7 @@ def upload():
         file=request.files['logfile']
         print(file.filename)
         print("yes")
-        path=os.path.join(UPLOADFOLDER, file.filename)
+        path=os.path.join("uploads", file.filename)
         
         if file.filename =="":
             msg="Please select file"
@@ -29,7 +27,7 @@ def upload():
         file.save(path)
         if not file.filename.endswith('.log'):
             msg = "Please upload a log file"
-            msg_cat="error"
+            msg_cat="error"  # message category
             os.remove(path)
             return render_template('log_upload2.html', message=msg,msg_cat=msg_cat)
         subprocess.run(['awk','-f','awking.awk', path], check=True) 
@@ -47,15 +45,15 @@ def upload():
         yearlist=[0]
         session["yearlist"]=yearlist
 
-        monthno={}
-        monthno={"Jan":1,"Feb":2,"Mar":3,"Apr":4,"May":5,"Jun":6,"Jul":7,"Aug":8,"Sep":9,"Oct":10,"Nov":11,"Dec":12}
+        month_no={}
+        month_no={"Jan":1,"Feb":2,"Mar":3,"Apr":4,"May":5,"Jun":6,"Jul":7,"Aug":8,"Sep":9,"Oct":10,"Nov":11,"Dec":12}
 
-        stime=""
-        etime=""
-        sdate=""
-        edate=""
-        smon=""
-        emon=""
+        start_time="" 
+        end_time=""
+        start_date=""
+        end_date=""
+        start_month=""
+        end_month=""
         with open("log.csv","r") as f:
             for line in f:
                 line=csv_parser(line)
@@ -65,30 +63,30 @@ def upload():
                 else:
                     if int(dt[-4:])>yearlist[len(yearlist)-1]:
                         yearlist.append(int(dt[-4:]))
-                    if stime =="":
-                        stime=dt[-12:-5]
-                        sdate=dt[8:10]
-                        smon=dt[4:7]
-                        session["firstTime"]=stime
-                        session["firstDate"]=sdate
-                        session["firstMonth"]=smon
-                etime=dt[-12:-5]
-                edate=dt[8:10]
-                emon=dt[4:7]
+                    if start_time =="":
+                        start_time=dt[-12:-5]
+                        start_date=dt[8:10]
+                        start_month=dt[4:7]
+                        session["firstTime"]=start_time
+                        session["firstDate"]=start_date
+                        session["firstMonth"]=start_month
+                end_time=dt[-12:-5]
+                end_date=dt[8:10]
+                end_month=dt[4:7]
 
-        session["lastTime"]=etime
-        session["lastDate"]=edate
-        session["lastMonth"]=emon
+        session["lastTime"]=end_time
+        session["lastDate"]=end_date
+        session["lastMonth"]=end_month
         yearlist.pop(0)
         session['yearlist1']=yearlist[1:]
         session['yearlist2']=yearlist[:len(yearlist)-1]
-        a=list(monthno.keys())
-        b=list(monthno.keys())
-        a.pop(monthno[smon]-1)
-        b.pop(monthno[emon]-1)
+        a=list(month_no.keys())
+        b=list(month_no.keys())
+        a.pop(month_no[start_month]-1)
+        b.pop(month_no[end_month]-1)
         session['monthlist1']=a
         session['monthlist2']=b
-        #print(yearlist)
+        #print(yearlist) 
         session["firstYear"]=yearlist[0]
         session["lastYear"]=yearlist[len(yearlist)-1]
 
@@ -127,7 +125,7 @@ def display():
             session["selectedLevel"]=level
         eventId=request.form.get("eventid")
         session["selectedEventId"]=eventId
-        eventId=ConvertInputEventId(eventId)
+        eventId=ConvertInputEventId(eventId) # converts the input from Event/s text box to event id list or returns False if the input is not proper
         
         if eventId==False:
             filter_msg="Please enter correct event Ids"
@@ -154,6 +152,7 @@ def display():
                             if (level=="all" or level==linep[2]) and (linep[4] in eventId):
                                 dataList.append(linep)
                                 ff.write(line)
+    # if filter_post is False and filter_msg is not False, then the Download Filtered csv button wont appear so when the filter is not submitted, the button wont appear.
     return render_template('log_display.html',headList=headList,dataList=dataList,tableName=session.get('uploadedFileName'),levelsList=session.get('levelsList'),eventIdsList=session.get('eventIdsList'),selectedLevel=session.get('selectedLevel'),selectedEventId=session.get('selectedEventId'),filter_msg=filter_msg,filter_post=filter_post)
 
 
@@ -171,59 +170,59 @@ def graphs():
         return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'))
     if request.method == 'POST':
         displayyes=True
-        monthno={"Jan":1,"Feb":2,"Mar":3,"Apr":4,"May":5,"Jun":6,"Jul":7,"Aug":8,"Sep":9,"Oct":10,"Nov":11,"Dec":12}
-        syear = int(request.form.get("syear"))
-        smonth = int(monthno[request.form.get("smonth")])
-        sdate=int(request.form.get("sdate"))
-        if sdate>31:
+        month_no={"Jan":1,"Feb":2,"Mar":3,"Apr":4,"May":5,"Jun":6,"Jul":7,"Aug":8,"Sep":9,"Oct":10,"Nov":11,"Dec":12}
+        start_year = int(request.form.get("start_year"))
+        start_month = int(month_no[request.form.get("start_month")])
+        start_date=int(request.form.get("start_date"))
+        if start_date>31:
             return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid Start Time")
-        stime = request.form.get("stime")
-        stime=stime.split(":")
+        start_time = request.form.get("start_time")
+        start_time=start_time.split(":")
         try:
-            stime=[int(i) for i in stime]
-            if len(stime)!=3 or stime[0]>24 or stime[1]>60 or stime[2]>60:
+            start_time=[int(i) for i in start_time]
+            if len(start_time)!=3 or start_time[0]>24 or start_time[1]>60 or start_time[2]>60:
                 return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid Start Time")
-            stime=stime[0]+stime[1]*0.01+stime[2]*0.0001
+            start_time=start_time[0]+start_time[1]*0.01+start_time[2]*0.0001
         except:
             return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid Start Time")
-        eyear = int(request.form.get("eyear"))
-        emonth = int(monthno[request.form.get("emonth")])
-        edate=int(request.form.get("edate"))
-        if edate>31:
+        end_year = int(request.form.get("end_year"))
+        end_month = int(month_no[request.form.get("end_month")])
+        end_date=int(request.form.get("end_date"))
+        if end_date>31:
             return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid End Time")
-        etime = request.form.get("etime")
-        etime=etime.split(":")
+        end_time = request.form.get("end_time")
+        end_time=end_time.split(":")
         try:
-            etime=[int(i) for i in etime]
-            if len(etime)!=3 or etime[0]>24 or etime[1]>60 or etime[2]>60:
+            end_time=[int(i) for i in end_time]
+            if len(end_time)!=3 or end_time[0]>24 or end_time[1]>60 or end_time[2]>60:
                 return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid End Time")
-            etime=etime[0]+etime[1]*0.01+etime[2]*0.0001
+            end_time=end_time[0]+end_time[1]*0.01+end_time[2]*0.0001
         except:
             return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid End Time")
-    sDateTime=syear*10000+smonth*100+sdate+stime*0.01
-    eDateTime=eyear*10000+emonth*100+edate+etime*0.01
-    displyFrom=request.form.get("smonth")+" "+str(sdate)+" "+request.form.get("stime")+" "+str(syear)
-    displayTo=request.form.get("emonth")+" "+str(edate)+" "+request.form.get("etime")+" "+str(eyear)
+    start_DateTime=start_year*10000+start_month*100+start_date+start_time*0.01
+    end_DateTime=end_year*10000+end_month*100+end_date+end_time*0.01
+    displayFrom=request.form.get("start_month")+" "+str(start_date)+" "+request.form.get("start_time")+" "+str(start_year)
+    displayTo=request.form.get("end_month")+" "+str(end_date)+" "+request.form.get("end_time")+" "+str(end_year)
     
-    session['displayFrom']=displyFrom
+    session['displayFrom']=displayFrom
     session['displayTo']=displayTo
     error=0
     notice=0
-    time={}
-    times=[]
-    noof=[]
+    time={} # dictionary of Date time and their corresponding frequency
+    times=[] #list of Date times.
+    no_of_time=[] #list of no of times of a specifc Date time.
     eventCount=[0,0,0,0,0,0]
     with open("log.csv","r") as f:
         a=0
         for line in f:
             line=csv_parser(line)
             if a==1:
-                if sDateTime>eDateTime:
+                if start_DateTime>end_DateTime:
                     return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),msg=True)
-                if DateTime(line)>eDateTime:
+                if DateTime(line)>end_DateTime:
                     break
-                if sDateTime<=DateTime(line)<=eDateTime:
-                    #print("ooo")
+                if start_DateTime<=DateTime(line)<=end_DateTime:
+                    #print("ooo") 
                     try:
                         time[line[1]]+=1
                     except KeyError:
@@ -236,12 +235,13 @@ def graphs():
                         notice+=1
             a=1
     downasList=[".png",".jpeg",".pdf"]
+    # for line plot Events vs Time :
     plt.figure(figsize=(17,15))
     times=time.keys()
     times=list(times)
     #print(times)
-    noof=time.values()
-    plt.plot(times,noof,color='#ff8500')
+    no_of_time=time.values()
+    plt.plot(times,no_of_time,color='#ff8500')
     plt.xlabel('Time',fontsize=14)
     plt.ylabel('Number of Events',fontsize=14)
     plt.title('Events vs Time',fontsize=16)
@@ -263,7 +263,8 @@ def graphs():
         plt.savefig(plotPath)
     plt.tight_layout()
     plt.clf()
-
+ 
+    # for pie plot Level State Distribution:
     y=[error,notice]
     labels=["error","notice"]
     colors=["#ff8500","#219ebc"]
@@ -277,6 +278,7 @@ def graphs():
         plt.savefig(plotPath)
     plt.clf()
     
+    # for bar plot Event Code Distribution:
     plt.figure()
     events=[f"E{i}" for i in range(1,7)]
     plt.title('Event Code Distribution')
