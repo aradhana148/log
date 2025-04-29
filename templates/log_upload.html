@@ -2,7 +2,7 @@
 
 {% block head %}
 
-<title>Upload log file</title>
+<title>Upload</title>
 <link href="{{ url_for('static', filename='css/up.css') }}" rel="stylesheet">
 
 {% endblock %}
@@ -14,7 +14,7 @@
     <br>
     <a href="/" class="nav_link">Home</a>
 </nav>
-{% if yes %}
+{% if show_links_to_other_pages_yes %}
     <nav class="view_nav">
         <br>
         <a href="/" class="nav_link">Home</a>

@@ -1,5 +1,5 @@
 {% block head %}
-<title>Custom</title>
+<title>Custom Analysis</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
 {% endblock %}
@@ -31,9 +31,10 @@ plt.savefig("static/custom.png")
     </textarea>
     <button type="submit" class="button">Submit</button>
 </form>
-{% if emsg %}
-    <p>{{emsg}}</p>
-{% else %}
+{% if error_msg %}
+    <p>{{error_msg}}</p>
+{% endif %}
+{% if show_custom_yes %}
     <img src="{{ url_for('static', filename='custom.png') }}" alt="">
     <br><br>
     <a href="/downloadCustom" class="button" id="down_csv">Download plot</a>

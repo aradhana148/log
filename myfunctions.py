@@ -20,9 +20,10 @@ def csv_parser(line):
         linelist.append(line[l+1:len(line)].strip('"\n'))
     return linelist
 
-# Converts time to a number so that i can compare times
+# Converts line from the csv file to a number so that i can compare times
 def DateTime(line):
     monthno={"Jan":1,"Feb":2,"Mar":3,"Apr":4,"May":5,"Jun":6,"Jul":7,"Aug":8,"Sep":9,"Oct":10,"Nov":11,"Dec":12}
+    # line[1] is the time in the csv line list
     return (int(line[1][-4:])*10000+int(monthno[line[1][4:7]])*100+int(line[1][8:10]) + 0.01*(int(line[1][-13:-11])+int(line[1][-10:-8])*0.01+int(line[1][-7:-5])*0.0001))
 
 # Converts the input from Event/s text box to event id list or returns False if the input is not proper

@@ -9,45 +9,50 @@ from myfunctions import csv_parser,DateTime,ConvertInputEventId
 app=Flask(__name__)
 app.secret_key="chocolate oompa loompa"
 
+UPLOADFOLDER = "uploads"
+os.makedirs(UPLOADFOLDER,mode=0o777, exist_ok=True)
 
 @app.route('/',methods=['GET', 'POST'])
 def upload():
     msg=""
-    yes = False
+    show_links_to_other_pages_yes = False
     if request.method == 'POST':
         file=request.files['logfile']
         print(file.filename)
         print("yes")
-        path=os.path.join("uploads", file.filename)
+        path=os.path.join(UPLOADFOLDER, file.filename)
         
         if file.filename =="":
             msg="Please select file"
-            msg_cat="error"
-            return render_template('log_upload2.html', message=msg,msg_cat=msg_cat)
+            msg_cat="error" # message category
+            return render_template('log_upload.html', message=msg,msg_cat=msg_cat)
         file.save(path)
+        # Check if file is log file
         if not file.filename.endswith('.log'):
             msg = "Please upload a log file"
             msg_cat="error"  # message category
             os.remove(path)
-            return render_template('log_upload2.html', message=msg,msg_cat=msg_cat)
+            return render_template('log_upload.html', message=msg,msg_cat=msg_cat)
         subprocess.run(['awk','-f','awking.awk', path], check=True) 
+        # Check if file is Apache log file
         if "log.csv" not in os.listdir("."):
             msg= "Please upload Apache log"
-            msg_cat="error"
+            msg_cat="error" # message category
             os.remove(path)
-            return render_template('log_upload2.html',message=msg,msg_cat=msg_cat)
+            return render_template('log_upload.html',message=msg,msg_cat=msg_cat)
         
         session["upload_yes"]=True
         session["uploadedFileName"]=file.filename[:-4]  
         msg = "Log file uploaded and processed successfully"
-        yes = True
+        show_links_to_other_pages_yes = True
         i=0
-        yearlist=[0]
+        yearlist=[0] # the list of years in the log file
         session["yearlist"]=yearlist
 
         month_no={}
         month_no={"Jan":1,"Feb":2,"Mar":3,"Apr":4,"May":5,"Jun":6,"Jul":7,"Aug":8,"Sep":9,"Oct":10,"Nov":11,"Dec":12}
-
+ 
+        # To find the first(start) and last(end) Datetime of the log file and get a list of all the years(yearlist) in the log file
         start_time="" 
         end_time=""
         start_date=""
@@ -86,26 +91,22 @@ def upload():
         b.pop(month_no[end_month]-1)
         session['monthlist1']=a
         session['monthlist2']=b
-        #print(yearlist) 
         session["firstYear"]=yearlist[0]
         session["lastYear"]=yearlist[len(yearlist)-1]
 
     
-    return render_template('log_upload2.html',message=msg,yes=yes,msg_cat="no_error")
+    return render_template('log_upload.html',message=msg,show_links_to_other_pages_yes=show_links_to_other_pages_yes,msg_cat="no_error")
 
             
 @app.route('/display',methods=['GET','POST'])
 def display():
     i=0
-    headList=None
-    dataList=[]
+    headList=None # the list of the table head elements
+    dataList=[] # list of list of table body elements
     LevelsList=["all","notice","error"]
-    EventIdsList=[("E"+str(i)) for i in range(1,7)]
-    EventIdsList=["all"]+EventIdsList
     session["levelsList"]=LevelsList
-    session["eventIdsList"]=EventIdsList
     filter_msg=False
-    filter_post=False
+    filter_post=False # to check if the filter query is submitted
     with open("log.csv","r") as f:
         for line in f:
             if i==0:
@@ -153,7 +154,7 @@ def display():
                                 dataList.append(linep)
                                 ff.write(line)
     # if filter_post is False and filter_msg is not False, then the Download Filtered csv button wont appear so when the filter is not submitted, the button wont appear.
-    return render_template('log_display.html',headList=headList,dataList=dataList,tableName=session.get('uploadedFileName'),levelsList=session.get('levelsList'),eventIdsList=session.get('eventIdsList'),selectedLevel=session.get('selectedLevel'),selectedEventId=session.get('selectedEventId'),filter_msg=filter_msg,filter_post=filter_post)
+    return render_template('log_display.html',headList=headList,dataList=dataList,tableName=session.get('uploadedFileName'),levelsList=session.get('levelsList'),selectedLevel=session.get('selectedLevel'),selectedEventId=session.get('selectedEventId'),filter_msg=filter_msg,filter_post=filter_post)
 
 
 @app.route('/download')
@@ -179,7 +180,7 @@ def graphs():
         start_time = request.form.get("start_time")
         start_time=start_time.split(":")
         try:
-            start_time=[int(i) for i in start_time]
+            start_time=[int(i) for i in start_time] # list of hour,minute,seconds
             if len(start_time)!=3 or start_time[0]>24 or start_time[1]>60 or start_time[2]>60:
                 return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid Start Time")
             start_time=start_time[0]+start_time[1]*0.01+start_time[2]*0.0001
@@ -193,14 +194,14 @@ def graphs():
         end_time = request.form.get("end_time")
         end_time=end_time.split(":")
         try:
-            end_time=[int(i) for i in end_time]
+            end_time=[int(i) for i in end_time] # list of hour,minute,seconds
             if len(end_time)!=3 or end_time[0]>24 or end_time[1]>60 or end_time[2]>60:
                 return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid End Time")
             end_time=end_time[0]+end_time[1]*0.01+end_time[2]*0.0001
         except:
             return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid End Time")
-    start_DateTime=start_year*10000+start_month*100+start_date+start_time*0.01
-    end_DateTime=end_year*10000+end_month*100+end_date+end_time*0.01
+    start_DateTime=start_year*10000+start_month*100+start_date+start_time*0.01 # to convert start datetime to number
+    end_DateTime=end_year*10000+end_month*100+end_date+end_time*0.01 # to convert end datetime to number
     displayFrom=request.form.get("start_month")+" "+str(start_date)+" "+request.form.get("start_time")+" "+str(start_year)
     displayTo=request.form.get("end_month")+" "+str(end_date)+" "+request.form.get("end_time")+" "+str(end_year)
     
@@ -211,7 +212,7 @@ def graphs():
     time={} # dictionary of Date time and their corresponding frequency
     times=[] #list of Date times.
     no_of_time=[] #list of no of times of a specifc Date time.
-    eventCount=[0,0,0,0,0,0]
+    eventCount=[0,0,0,0,0,0] # to count the no of times each event occurs
     with open("log.csv","r") as f:
         a=0
         for line in f:
@@ -222,7 +223,6 @@ def graphs():
                 if DateTime(line)>end_DateTime:
                     break
                 if start_DateTime<=DateTime(line)<=end_DateTime:
-                    #print("ooo") 
                     try:
                         time[line[1]]+=1
                     except KeyError:
@@ -234,12 +234,11 @@ def graphs():
                     else:
                         notice+=1
             a=1
-    downasList=[".png",".jpeg",".pdf"]
+    downasList=[".png",".jpeg",".pdf"] #download as list
     # for line plot Events vs Time :
     plt.figure(figsize=(17,15))
     times=time.keys()
     times=list(times)
-    #print(times)
     no_of_time=time.values()
     plt.plot(times,no_of_time,color='#ff8500')
     plt.xlabel('Time',fontsize=14)
@@ -249,9 +248,7 @@ def graphs():
         arr=np.linspace(0,len(times)-1,20)
         arr=list(arr)
         arr=[int(i) for i in arr]
-        #print(arr)
         xticks=[times[i][4:] for i in arr]
-        #print(xticks)
         plt.xticks(arr,xticks,rotation=45,ha='right')
     if 6<=len(times)<=20:
         xticks=[times[i][4:] for i in range(0,len(times))]
@@ -264,7 +261,7 @@ def graphs():
     plt.tight_layout()
     plt.clf()
  
-    # for pie plot Level State Distribution:
+    # for pie plot Level State Distribution :
     y=[error,notice]
     labels=["error","notice"]
     colors=["#ff8500","#219ebc"]
@@ -278,7 +275,7 @@ def graphs():
         plt.savefig(plotPath)
     plt.clf()
     
-    # for bar plot Event Code Distribution:
+    # for bar plot Event Code Distribution :
     plt.figure()
     events=[f"E{i}" for i in range(1,7)]
     plt.title('Event Code Distribution')
@@ -294,6 +291,7 @@ def graphs():
 
 @app.route('/download_graph',methods=['GET','POST'])
 def downloadGraph():
+    #to download the plots in the chosen file type
     downas=request.form.get('download_as')
     plotType=request.form.get('plotType')
     downasDict={"PNG":".png","JPEG":".jpeg","PDF":".pdf"}
@@ -304,7 +302,9 @@ def downloadGraph():
 
 @app.route('/custom',methods=['GET','POST'])
 def customGraph():
-    emsg=""
+    # Embedded python code editor for custom analysis
+    show_custom_yes=False
+    error_msg=""
     if request.method == 'POST':
         code=request.form.get('code')
         try:
@@ -312,9 +312,11 @@ def customGraph():
             plt.figure()  
             exec(code)
             plt.clf()
-        except Exception as err:
-            emsg = str(emsg)
-    return render_template('custom.html',emsg=emsg)
+            show_custom_yes=True
+        except Exception as error:
+            error_msg = str(error)
+            print(error_msg)
+    return render_template('custom.html',error_msg=error_msg,show_custom_yes=show_custom_yes)
 
 @app.route('/downloadCustom')
 def downloadCustom():
