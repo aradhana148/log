@@ -1,16 +1,89 @@
 body{
     font-family: 'Kantumruy Pro', sans-serif;
-    background-color: #a5d1e5;
+    background-color: #f8f8f8;
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
-.upbox {
-    background-color:#8ecae6;
+#boxes{
+    margin-left: 220px;
+    padding-left: 200px;
+    padding-right: 200px;
+    padding-top: 200px;
+}
+
+#outer_box {
+    background-color:#bbe0f1 ;
+    border: 3px solid #023047;
     text-align: center;
     border-radius: 15px;
-    padding: 30px;
+    align-items: center;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size:xx-large;
+}
+
+#box {
+    text-align: center;
+    color: #023047;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 8px;
+    padding-top: 100px;
+    padding-bottom: 100px;
+}
+
+#upload_button{
+    background-color: #ffb703;
+    border: 2px solid rgb(126, 62, 17);
+    padding:10px 20px;
+    color:rgb(82, 5, 5);
+    font-size: x-large;
+    border-radius: 8px;
+    box-shadow:2px 0 5px rgba(0, 0, 0, 0.3) ;
+}
+#upload_button_div{
+    text-align: center;
+    padding-top: 20px;
+}
+#upload_button:hover{
+    background-color: #fb8500;
+}
+input[type="file"]{
+    font-size: large;
+    padding: 10px;
+    border-radius: 7px;
+}
+#output_message{
+    text-align: center;
+}
+.error{
+    color: #e40303;
+    font-size: large;
+}
+.no_error{
+    color: #000000;
+}
+
+.view_nav{
+    width: 200px;
+    height: 100%;
+    background-color: #023047; 
+    position: fixed;
+    box-shadow:3px 0 5px rgba(0, 0, 0, 0.3);
+}
+.nav_link{
+    color: white;
+    font-size: x-large;
+    text-decoration: none;
+}
+.head {
+    text-align: center;
+}
+#down_csv{
+    position: absolute;
+    top:0;
+    right:0;
 }

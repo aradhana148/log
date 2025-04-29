@@ -1,16 +1,32 @@
 {% block head %}
 <title>Custom</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
 {% endblock %}
 
 {% block body %}
+<nav class="view_nav">
+    <br>
+    <a href="/" class="nav_link">Home</a>
+    <br><br><br>
+    <a href="/display" class="nav_link">Structured Log</a>
+    <br><br><br>
+    <a href="/graphs" class="nav_link">Graphs & Plots</a>
+    <br><br><br>
+    <a href="/custom" class="nav_link">Custom Plots</a>
+</nav>
+<div id="content">
 <form method="POST" enctype="multipart/form-data" action="/custom">
     <textarea name="code" rows="20" cols="100">
-#write code 
-print("hi")
-# write code below
+# df is the pandas DataFrame containing the log data.
+# Columns : ['LineId', 'Time', 'Level', 'Content', 'EventId', 'EventTemplate']
+# matplotlib.pyplot is imported as plt for plotting.
+# Enter code below
 
 
-#writing done
+
+# Code finish
+# The plot will be saved as custom.png, please dont change the name of the file.
 plt.savefig("static/custom.png")
     </textarea>
     <button type="submit" class="button">Submit</button>
@@ -19,6 +35,8 @@ plt.savefig("static/custom.png")
     <p>{{emsg}}</p>
 {% else %}
     <img src="{{ url_for('static', filename='custom.png') }}" alt="">
+    <br><br>
+    <a href="/downloadCustom" class="button" id="down_csv">Download plot</a>
 {% endif %}
-
+</div>
 {% endblock %}

@@ -1,13 +1,23 @@
 {% block head %}
 <title>Graphs</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/graphs.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
 {% endblock %}
 
 {% block body %}
-<a href="/" class="button" style="float: right;">Back to Upload page</a>
-<a href="/custom" class="button">custom</a>
-<form method="POST" enctype="multipart/form-data">
-    <label for="start_time">Start Time :</label>
+<nav class="view_nav">
+    <br>
+    <a href="/" class="nav_link">Home</a>
+    <br><br><br>
+    <a href="/display" class="nav_link">Structured Log</a>
+    <br><br><br>
+    <a href="/graphs" class="nav_link">Graphs & Plots</a>
+    <br><br><br>
+    <a href="/custom" class="nav_link">Custom Plots</a>
+</nav>
+<div id="content">
+<form method="POST" enctype="multipart/form-data" class="start_end_form" >
+    <label for="start_time">Start Date and Time :</label>
     <select class="start_time" id="syear" name="syear">
         <option value="{{firstYear}}">{{firstYear}}</option>
         {% for year in yearlist1 %}
@@ -23,7 +33,7 @@
     <input type="text" class="start_time" id="sdate" name="sdate" value={{firstDate}}></input>
     <input type="text" class="start_time" id="stime" name="stime" value={{firstTime}}></input>
     <br><br>
-    <label for="end_time">End Time :</label>
+    <label for="end_time">End Date and Time   :</label>
     <select class="end_time" id="eyear" name="eyear">
         <option value="{{lastYear}}">{{lastYear}}</option>
         {% for year in yearlist2 %}
@@ -38,7 +48,8 @@
     </select>
     <input type="text" class="end_time" id="edate" name="edate" value={{lastDate}}></input>
     <input type="text" class="end_time" id="etime" name="etime" value={{lastTime}}></input>
-    <input type="submit">
+    <br>
+    <input type="submit" class="button">
 </form>
 {% if msg %}
     <p>Please enter valid Start and End times</p>
@@ -65,16 +76,18 @@
         <button type="submit" class="button">Download</button>
     </form>
     <div class="line">
-        <h3>Events logged with Time</h3>
         <img src="{{ url_for('static', filename='events_vs_time.png') }}" alt="Line Plot">
     </div>
+    <br><br>
+    <div class="pie_and_bar">
     <div class="pie">
-        <h3>Level State Distribution</h3>
         <img src="{{ url_for('static', filename='level_state_distribution.png') }}" alt="Pie Chart">
     </div>
     <div class="bar">
-        <h3>Event Code Distribution</h3>
         <img src="{{ url_for('static', filename='event_code_distribution.png') }}" alt="Bar Chart">
     </div>
+    </div>
+    <br>
 {% endif %}
+</div>
 {% endblock %}

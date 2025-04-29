@@ -1,0 +1,41 @@
+body{
+    background-color: #ffffff;
+}
+#csv {
+    border: 4px solid black
+}
+#csv tr:nth-child(even){
+        background-color: rgba(141, 199, 250, 0.4);
+}
+#csv th:nth-child(even){
+    background-color: rgba(31, 136, 228, 0.4);
+}
+#csv th:nth-child(odd){
+    background-color: rgba(31, 136, 228, 0.4);
+}
+#csv td:nth-child(even){
+        background-color: rgba(141, 199, 250, 0.4);
+}
+
+.head {
+    position: relative;        
+    text-align: center;        
+    padding: 8px 0;
+}
+.head h2 {
+    margin: 0;
+}
+#down_csv {
+    position: absolute;        
+    top: 65px;                  
+    right: 30px;               
+}
+#csv{
+    position: relative;
+    margin: auto;
+}
+#down_fil_csv{
+    position: absolute;
+    right:30px;
+    top: 210px;
+}

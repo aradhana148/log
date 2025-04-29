@@ -1,18 +1,26 @@
 {% block head %}
 <title>Display Structured Logs</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/display.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
 {% endblock %}
 
 {% block body %}
-<a href="/" class="button" style="float: right;">Back to Upload page</a>
+<nav class="view_nav">
+    <br>
+    <a href="/" class="nav_link">Home</a>
+    <br><br><br>
+    <a href="/display" class="nav_link">Structured Log</a>
+    <br><br><br>
+    <a href="/graphs" class="nav_link">Graphs & Plots</a>
+    <br><br><br>
+    <a href="/custom" class="nav_link">Custom Plots</a>
+</nav>
+<div id="content">
+<div class="head">
+    <h1>{{ tableName }}</h1>
+    <a href="/download" class="button" id="down_csv">Download csv</a>
+</div>
 
-<a href="/graphs" class="button" style="float: right;">View Graphs & Plots</a>
-
-<h2>{{ tableName }}</h2>
-
-<a href="/download" class="button" >Download csv</a>
-
-<br><br>
 <p>To filter by EventId, give EventId seperated by commas and/or hyphen</p>
 <p>Example : E2,E4-E6</p>
 <form method="POST" enctype="multipart/form-data" action="/display">
@@ -24,19 +32,19 @@
     </select>
     <label for="eventid">Filter by EventId/s:</label>
     <input type="text" class="eventid" name="eventid" value="E1-E6">
-    <!-- <label for="eventIds">Event ID:</label>
-    <select class="eventIds" name="eventid">
-        {% for i in eventIdsList %}
-            <option>{{i}}</option>
-        {% endfor %}
-    </select> -->
     <button type="submit" class="button">Submit</button>
 </form>
 <p>Level/s   : {{ selectedLevel }}</p>
-<p>EventId/s : {{selectedEventId}}</p>
+{% if filter_msg %}
+    <p>EventId/s : {{filter_msg}} </p>
+{% else %}
+    <p>EventId/s : {{selectedEventId}} </p>
+{% endif %}
+
 {% if dataList %}
-    <a href="/downloadFilter" class="button">Download Filtered csv</a>
-    <br><br>
+    {% if not filter_msg and filter_post %}
+        <a href="/downloadFilter" class="button" id="down_fil_csv">Download Filtered csv</a>
+    {% endif %}
     <table id="csv">
         <tr>
             {% for head in headList %}
@@ -51,5 +59,6 @@
             </tr>
         {% endfor %}
     </table>
+</div>
 {% endif %}
 {% endblock %}

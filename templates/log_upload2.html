@@ -3,28 +3,47 @@
 {% block head %}
 
 <title>Upload log file</title>
-<style>
-    #outer_box{
-        border: 2px dashed black;
-        width: 300px;
-        height: 300px;
-    }
-
-</style>
+<link href="{{ url_for('static', filename='css/up.css') }}" rel="stylesheet">
 
 {% endblock %}
 
 
 {% block body %}
-<form action="/" method="POST" enctype="multipart/form-data" id="upform">
-    <div id="outer_box">
-        <div id="box">
-            <p id="drag_drop_msg">Drag logfile here to upload or</p>
-            <input type="file" id="file" name="logfile">
+
+<nav class="view_nav">
+    <br>
+    <a href="/" class="nav_link">Home</a>
+</nav>
+{% if yes %}
+    <nav class="view_nav">
+        <br>
+        <a href="/" class="nav_link">Home</a>
+        <br><br><br>
+        <a href="/display" class="nav_link">Structured Log</a>
+        <br><br><br>
+        <a href="/graphs" class="nav_link">Graphs & Plots</a>
+        <br><br><br>
+        <a href="/custom" class="nav_link">Custom Plots</a>
+    </nav>
+{% endif %}
+<div id="boxes">
+    <form action="/" method="POST" enctype="multipart/form-data" id="upform">
+        <div id="outer_box">
+            <div id="box">
+                <p id="drag_drop_msg">Drag logfile here to upload or</p>
+                <input type="file" id="file" name="logfile">
+            </div>
         </div>
-    </div>
-    <button type="submit">Upload</button>
-</form>
+        <div id="upload_button_div">
+            <button type="submit" id="upload_button">Upload</button>
+        </div>
+        {% if message %}
+        <div class={{msg_cat}}>
+            <p id="output_message">{{ message }}</p>
+        </div>
+        {% endif %}
+    </form>
+</div>
 <script>
     const box=document.getElementById('box');
     const input_file=document.getElementById('file');
@@ -32,7 +51,7 @@
     const form=document.getElementById('upform')
     box.addEventListener('dragover', (event)=>{
         event.preventDefault();
-        box.style.border="2px dashed black";
+        box.style.border="3px dashed #023047";
         drag_drop_msg.textContent="Drop to upload file";
     });
     box.addEventListener('dragleave', (event) => {
@@ -52,21 +71,9 @@
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
         input_file.files = dataTransfer.files;
-
-        drag_drop_msg.textContent = file.name + ' ready - click Upload';
+        drag_drop_msg.textContent = file.name + ' - click Upload';
     });
 </script>
-
-
-{% if message %}
-    <p>{{ message }}</p>
-{% endif %}
-
-{% if yes %}
-    <p><a href="/display">View Structured Log</a></p>
-
-    <p><a href="/graphs">View Graphs & Plots</a></p>
-{% endif %}
 
 {% endblock %}
 

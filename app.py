@@ -4,53 +4,13 @@ import subprocess
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-def csv_parser(line):
-    linelist=[]
-    j=0
-    for i in line:
-        if i==",":
-            linelist.append(line[:j])
-            break
-        j+=1
-    l=j+1
-    for k in range(j+1,len(line)):
-        if line[k]=='"' and line[k+1]=="," and line[k+2]=='"':
-            linelist.append(line[l+1:k].strip())
-            l=k+2
-    if (line[len(line)-2])==',':
-        linelist.append(line[l+1:len(line)-4].strip('\n'))
-        linelist.append("")
-        linelist.append("")
-    else:
-        linelist.append(line[l+1:len(line)].strip('"\n'))
-    return linelist
-
-def DateTime(line):
-    monthno={"Jan":1,"Feb":2,"Mar":3,"Apr":4,"May":5,"Jun":6,"Jul":7,"Aug":8,"Sep":9,"Oct":10,"Nov":11,"Dec":12}
-    return (int(line[1][-4:])*10000+int(monthno[line[1][4:7]])*100+int(line[1][8:10]) + 0.01*(int(line[1][-13:-11])+int(line[1][-10:-8])*0.01+int(line[1][-7:-5])*0.0001))
-
-def ConvertInputEventId(event):
-    if event==None:
-        return None
-    comma=event.split(',')
-    eventlist=[]
-    for i in comma:
-        if '-' not in i:
-            eventlist.append(i)
-        if '-' in i:
-            toexpand=i.split('-')
-            for j in range(int(toexpand[0][1]),int(toexpand[1][1])+1):
-                eventlist.append("E"+str(j))
-    return eventlist
+from myfunctions import csv_parser,DateTime,ConvertInputEventId
 
 app=Flask(__name__)
 app.secret_key="oompa loompa"
 
 UPLOADFOLDER = "uploads"
 os.makedirs(UPLOADFOLDER,mode=0o777, exist_ok=True)
-LOGFOLDER = "logs"
-os.makedirs(LOGFOLDER,mode=0o777, exist_ok=True)
 
 @app.route('/',methods=['GET', 'POST'])
 def upload():
@@ -64,17 +24,21 @@ def upload():
         
         if file.filename =="":
             msg="Please select file"
-            return render_template('log_upload2.html', message=msg)
+            msg_cat="error"
+            return render_template('log_upload2.html', message=msg,msg_cat=msg_cat)
         file.save(path)
         if not file.filename.endswith('.log'):
             msg = "Please upload a log file"
+            msg_cat="error"
             os.remove(path)
-            return render_template('log_upload2.html', message=msg)
+            return render_template('log_upload2.html', message=msg,msg_cat=msg_cat)
         subprocess.run(['awk','-f','awking.awk', path], check=True) 
         if "log.csv" not in os.listdir("."):
             msg= "Please upload Apache log"
+            msg_cat="error"
             os.remove(path)
-            return render_template('log_upload2.html',message=msg)
+            return render_template('log_upload2.html',message=msg,msg_cat=msg_cat)
+        
         session["upload_yes"]=True
         session["uploadedFileName"]=file.filename[:-4]  
         msg = "Log file uploaded and processed successfully"
@@ -129,7 +93,7 @@ def upload():
         session["lastYear"]=yearlist[len(yearlist)-1]
 
     
-    return render_template('log_upload2.html',message=msg,yes=yes)
+    return render_template('log_upload2.html',message=msg,yes=yes,msg_cat="no_error")
 
             
 @app.route('/display',methods=['GET','POST'])
@@ -142,6 +106,8 @@ def display():
     EventIdsList=["all"]+EventIdsList
     session["levelsList"]=LevelsList
     session["eventIdsList"]=EventIdsList
+    filter_msg=False
+    filter_post=False
     with open("log.csv","r") as f:
         for line in f:
             if i==0:
@@ -153,6 +119,7 @@ def display():
         session["selectedLevel"]="all"
         session["selectedEventId"]="all"
     if request.method=="POST":
+        filter_post=True
         level=request.form.get("level")
         if level=="all":
             session["selectedLevel"]="notice,error"
@@ -161,22 +128,33 @@ def display():
         eventId=request.form.get("eventid")
         session["selectedEventId"]=eventId
         eventId=ConvertInputEventId(eventId)
-        i=0
-        dataList=[]
-        with open("filtered_log.csv","w") as ff:
-            with open("log.csv","r") as f:  
+        
+        if eventId==False:
+            filter_msg="Please enter correct event Ids"
+            with open("log.csv","r") as f:
                 for line in f:
                     if i==0:
-                        ff.write(line)
                         headList=line.split(',')
                         i=1
                     else:
                         linep=csv_parser(line)
-                        if (level=="all" or level==linep[2]) and (linep[4] in eventId):
-                            dataList.append(linep)
+                        dataList.append(linep)     
+        else: 
+            i=0
+            dataList=[]
+            with open("filtered_log.csv","w") as ff:
+                with open("log.csv","r") as f:  
+                    for line in f:
+                        if i==0:
                             ff.write(line)
-
-    return render_template('log_display.html',headList=headList,dataList=dataList,tableName=session.get('uploadedFileName'),levelsList=session.get('levelsList'),eventIdsList=session.get('eventIdsList'),selectedLevel=session.get('selectedLevel'),selectedEventId=session.get('selectedEventId'))
+                            headList=line.split(',')
+                            i=1
+                        else:
+                            linep=csv_parser(line)
+                            if (level=="all" or level==linep[2]) and (linep[4] in eventId):
+                                dataList.append(linep)
+                                ff.write(line)
+    return render_template('log_display.html',headList=headList,dataList=dataList,tableName=session.get('uploadedFileName'),levelsList=session.get('levelsList'),eventIdsList=session.get('eventIdsList'),selectedLevel=session.get('selectedLevel'),selectedEventId=session.get('selectedEventId'),filter_msg=filter_msg,filter_post=filter_post)
 
 
 @app.route('/download')
@@ -201,10 +179,13 @@ def graphs():
             return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid Start Time")
         stime = request.form.get("stime")
         stime=stime.split(":")
-        stime=[int(i) for i in stime]
-        if len(stime)!=3 or stime[0]>24 or stime[1]>60 or stime[2]>60:
+        try:
+            stime=[int(i) for i in stime]
+            if len(stime)!=3 or stime[0]>24 or stime[1]>60 or stime[2]>60:
+                return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid Start Time")
+            stime=stime[0]+stime[1]*0.01+stime[2]*0.0001
+        except:
             return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid Start Time")
-        stime=stime[0]+stime[1]*0.01+stime[2]*0.0001
         eyear = int(request.form.get("eyear"))
         emonth = int(monthno[request.form.get("emonth")])
         edate=int(request.form.get("edate"))
@@ -212,10 +193,13 @@ def graphs():
             return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid End Time")
         etime = request.form.get("etime")
         etime=etime.split(":")
-        etime=[int(i) for i in etime]
-        if len(etime)!=3 or etime[0]>24 or etime[1]>60 or etime[2]>60:
+        try:
+            etime=[int(i) for i in etime]
+            if len(etime)!=3 or etime[0]>24 or etime[1]>60 or etime[2]>60:
+                return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid End Time")
+            etime=etime[0]+etime[1]*0.01+etime[2]*0.0001
+        except:
             return render_template('graphs_plots.html',yearlist1=session.get('yearlist1'),monthlist1=session.get('monthlist1'),yearlist2=session.get('yearlist2'),monthlist2=session.get('monthlist2'),firstTime=session.get('firstTime'),lastTime=session.get('lastTime'),lastDate=session.get('lastDate'),firstDate=session.get('firstDate'),firstMonth=session.get('firstMonth'),lastMonth=session.get('lastMonth'),firstYear=session.get('firstYear'),lastYear=session.get('lastYear'),timeerror="Please enter valid End Time")
-        etime=etime[0]+etime[1]*0.01+etime[2]*0.0001
     sDateTime=syear*10000+smonth*100+sdate+stime*0.01
     eDateTime=eyear*10000+emonth*100+edate+etime*0.01
     displyFrom=request.form.get("smonth")+" "+str(sdate)+" "+request.form.get("stime")+" "+str(syear)
@@ -252,12 +236,15 @@ def graphs():
                         notice+=1
             a=1
     downasList=[".png",".jpeg",".pdf"]
-    plt.figure(figsize=(19,12))
+    plt.figure(figsize=(17,15))
     times=time.keys()
     times=list(times)
     #print(times)
     noof=time.values()
-    plt.plot(times,noof)
+    plt.plot(times,noof,color='#ff8500')
+    plt.xlabel('Time',fontsize=14)
+    plt.ylabel('Number of Events',fontsize=14)
+    plt.title('Events vs Time',fontsize=16)
     if len(times)>20:
         arr=np.linspace(0,len(times)-1,20)
         arr=list(arr)
@@ -279,10 +266,11 @@ def graphs():
 
     y=[error,notice]
     labels=["error","notice"]
+    colors=["#ff8500","#219ebc"]
     plt.figure()
-    plt.pie(y,labels=labels)
-    plt.title("Log level")
-    plt.legend(labels,loc="upper right")
+    plt.pie(y,labels=labels,colors=colors)
+    plt.title("Level State Distribution")
+    plt.legend(labels,loc="best")
     for i in range(3):
         plotname="level_state_distribution"+downasList[i]
         plotPath=os.path.join("static",plotname)
@@ -291,7 +279,10 @@ def graphs():
     
     plt.figure()
     events=[f"E{i}" for i in range(1,7)]
-    plt.bar(events,eventCount,width=0.5)
+    plt.title('Event Code Distribution')
+    plt.xlabel('Event ID')
+    plt.ylabel('Number of Occurrences')
+    plt.bar(events,eventCount,width=0.5,color='#219ebc')
     for i in range(3):
         plotname="event_code_distribution"+downasList[i]
         plotPath=os.path.join("static",plotname)
@@ -323,7 +314,10 @@ def customGraph():
             emsg = str(emsg)
     return render_template('custom.html',emsg=emsg)
 
+@app.route('/downloadCustom')
+def downloadCustom():
+    return send_file('static/custom.png',as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True)
-# app.run(debug=True) also works idk yyyyy oo lalala
+
